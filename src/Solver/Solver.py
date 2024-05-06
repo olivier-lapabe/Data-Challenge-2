@@ -3,6 +3,8 @@ import torch.nn as nn
 import pandas as pd
 from tqdm import tqdm
 import time
+import logging
+import os
 from datetime import datetime
 from src.utils import metric_fn
 
@@ -10,32 +12,61 @@ class Solver:
     # -----------------------------------------------------------------------------
     # __init__
     # -----------------------------------------------------------------------------
-    def __init__(self, model, device, loss_fn, optimizer, dataloaders):
+    def __init__(self, model, device, loss_fn, optimizer, dataloaders, test_name):
         self.model = model
         self.device = device
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.dataloaders = dataloaders
+        self.test_name = test_name
         self.history = {'train_loss': [], 'val_loss': []}
+        self.log_directory = None
+        self.setup_logger()
+        
+
+    # -----------------------------------------------------------------------------
+    # setup_logger
+    # -----------------------------------------------------------------------------
+    def setup_logger(self):
+        # Formatting the current time
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.log_directory = f"./results/{current_time}_{self.test_name}"
+        
+        if not os.path.exists(self.log_directory):
+            os.makedirs(self.log_directory)
+
+        logging.basicConfig(filename=f"{self.log_directory}/training_log.log",
+                            level=logging.INFO,
+                            format='%(asctime)s:%(levelname)s: %(message)s')
 
 
     # -----------------------------------------------------------------------------
     # train
     # -----------------------------------------------------------------------------
     def train(self, num_epochs):
+        training_dataloader, validation_dataloader = self.dataloaders
+        logging.info(f"Test name: {self.test_name}")
+        logging.info("--- Dataloader parameters ---")
+        logging.info(f"# Validation samples: {len(validation_dataloader.dataset)}")
+        logging.info(f"Batch size: {training_dataloader.batch_size}")
+        logging.info("--- Training parameters ---")
+        logging.info(f"Model: {self.model}")
+        logging.info(f"Loss function: {self.loss_fn}")
+        logging.info(f"Optimizer: {self.optimizer}")
+        logging.info(f"# Epochs: {num_epochs}")
+        logging.info(f"Device used: {self.device}")
+        logging.info("--- Results ---")
+
         self.model.train()
         torch.backends.mps.benchmark = True
         torch.backends.cuda.benchmark = True
-        training_dataloader, validation_dataloader = self.dataloaders
+
         start_time = time.time()
-
         for epoch in range(num_epochs):
-            start_time_epoch = time.time()
             epoch_loss = 0
-            print("-----------------------------------------------------------")
-            print(f"Epoch {epoch+1} / {num_epochs}")
+            logging.info(f"Epoch {epoch+1} / {num_epochs}")
 
-            for batch_idx, (X, y, gender, filename) in tqdm(enumerate(training_dataloader), total=len(training_dataloader)):
+            for X, y, gender, filename in training_dataloader:
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 
@@ -53,14 +84,12 @@ class Solver:
 
             average_loss = epoch_loss / len(training_dataloader)
             self.history['train_loss'].append(average_loss)
-            end_time_epoch = time.time()
-            print(f"Training - Average loss: {average_loss} - Duration: {end_time_epoch - start_time_epoch} seconds")
+            logging.info(f"Training - Average loss: {average_loss}")
 
             self.evaluate(validation_dataloader)
 
         end_time = time.time()
-        print("-----------------------------------------------------------")
-        print(f"Average training + validation time per epoch: {(end_time - start_time) / num_epochs} seconds")
+        logging.info(f"Average training + validation time per epoch: {(end_time - start_time) / num_epochs} seconds")
     
 
     # -----------------------------------------------------------------------------
@@ -68,12 +97,11 @@ class Solver:
     # -----------------------------------------------------------------------------
     def evaluate(self, dataloader):
         self.model.eval()
-        start_time = time.time()
 
         results_list = []
         val_loss = 0
         with torch.no_grad():
-            for batch_idx, (X, y, gender, filename) in tqdm(enumerate(dataloader), total=len(dataloader)):
+            for X, y, gender, filename in dataloader:
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 
@@ -101,24 +129,16 @@ class Solver:
         self.history['val_loss'].append(average_loss)
         
         end_time = time.time()
-        print(f"Validation - Score : {score_val} - Average loss: {average_loss} - Duration: {end_time - start_time} seconds")
+        logging.info(f"Validation - Average loss: {average_loss}")
+        logging.info(f"Validation - Score : {score_val}")
     
 
     # -----------------------------------------------------------------------------
     # save_model
     # -----------------------------------------------------------------------------
-    def save_model(self, test_name, directory='./results'):
-        # Format the current time
-        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        full_directory = f"{directory}/{current_time}_{test_name}"
-
-        # Ensure the directory exists
-        import os
-        if not os.path.exists(full_directory):
-            os.makedirs(full_directory)
-
-        # Save the model
-        filename = f"{full_directory}/model.pth"
+    def save_model(self):
+        #TODO: Save model only for epoch where Validation score is minimum
+        filename = f"{self.log_directory}/model.pth"
         torch.save(self.model.state_dict(), filename)
         print(f"Model saved to {filename}")
     
@@ -131,3 +151,13 @@ class Solver:
             self.model.load_state_dict(torch.load(path))
         except Exception as e:
             print(f"Failed to load model from {path}: {e}")
+
+    
+    # -----------------------------------------------------------------------------
+    # test_predict
+    # -----------------------------------------------------------------------------
+    #def test_predict(self, path):
+        #TODO: Load best model
+        #TODO: Train on whole Train + Val
+        #TODO: Predict on Test
+        #TODO: Extract csv for upload

@@ -14,15 +14,14 @@ def main():
 
     # Dataloader parameters
     n_val = 20000
-    batch_size = 256
+    batch_size = 64
     num_workers = int(os.cpu_count()/2)
-    print(f"num_workers = {num_workers}")
 
     # Training parameters
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    num_epochs = 10
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    num_epochs = 40
 
     # Create Training, Validation dataloaders
     trainval_generators = create_dataloaders(
@@ -32,13 +31,18 @@ def main():
     
     # Define device
     device = define_device()
-    print("Using device:", device)
     
     # Train and evaluate the model
     model = model.to(device) 
-    solver = Solver(model=model, device=device, loss_fn=loss_fn, optimizer=optimizer, dataloaders=trainval_generators)
+    solver = Solver(
+        model=model, 
+        device=device, 
+        loss_fn=loss_fn, 
+        optimizer=optimizer, 
+        dataloaders=trainval_generators, 
+        test_name=test_name)
     solver.train(num_epochs=num_epochs)
-    solver.save_model(test_name=test_name)
+    solver.save_model()
         
 if __name__ == "__main__":
     main()
