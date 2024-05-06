@@ -14,7 +14,7 @@ def main():
     ## Dataloader parameters
     n_val = 20000
     batch_size=256
-    num_workers=0
+    num_workers=32
 
     ## Training parameters
     model = torchvision.models.mobilenet_v3_large(num_classes=1)

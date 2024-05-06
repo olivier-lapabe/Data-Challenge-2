@@ -16,6 +16,7 @@ class Solver:
     def train(self, num_epochs):
         self.model.train()
         torch.backends.mps.benchmark = True
+        torch.backends.cuda.benchmark = True
         start_time = time.time()
 
         for epoch in range(num_epochs):
