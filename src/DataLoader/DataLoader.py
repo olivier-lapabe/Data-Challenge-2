@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from PIL import Image
+import cv2
 import torch
 import torchvision.transforms as transforms
 
@@ -32,7 +32,7 @@ class Dataset(torch.utils.data.Dataset):
         # Select sample
         row = self.df.loc[index]
         filename = row['filename']
-        img = Image.open(f"{self.image_dir}/{filename}")
+        img = cv2.imread(f"{self.image_dir}/{filename}")
         X = self.transform(img)
 
         if not self.Test:
@@ -62,19 +62,19 @@ def create_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuffle_train
         training_generator, validation_generator, test_generator (torch.utils.data.DataLoader): Training, validation and test dataloaders.
     """
     df_train = pd.read_csv("data/listes_training/data_100K/train_100K.csv", delimiter=' ')
-    df_test = pd.read_csv("data/listes_training/data_100K/test_students.csv", delimiter=' ')
+    #df_test = pd.read_csv("data/listes_training/data_100K/test_students.csv", delimiter=' ')
     df_train = df_train.dropna()
-    df_test = df_test.dropna()
+    #df_test = df_test.dropna()
 
     df_val = df_train.loc[:n_val].reset_index(drop=True)
     df_train = df_train.loc[n_val:].reset_index(drop=True)
 
     training_set = Dataset(df_train, "data/crops_100K")
     validation_set = Dataset(df_val, "data/crops_100K")
-    test_set = Dataset(df_test, "data/crops_100K", Test=True)
+    #test_set = Dataset(df_test, "data/crops_100K", Test=True)
 
     training_generator = torch.utils.data.DataLoader(training_set, batch_size=batch_size, shuffle=shuffle_train, num_workers=num_workers)
     validation_generator = torch.utils.data.DataLoader(validation_set, batch_size=batch_size, shuffle=shuffle_val, num_workers=num_workers)
-    test_generator = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=shuffle_test, num_workers=num_workers)
+    #test_generator = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=shuffle_test, num_workers=num_workers)
 
-    return training_generator, validation_generator, test_generator
+    return training_generator, validation_generator#, test_generator
