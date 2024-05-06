@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from PIL import Image
 import cv2
 import torch
 import torchvision.transforms as transforms
@@ -32,7 +33,9 @@ class Dataset(torch.utils.data.Dataset):
         # Select sample
         row = self.df.loc[index]
         filename = row['filename']
-        img = cv2.imread(f"{self.image_dir}/{filename}")
+        img = Image.open(f"{self.image_dir}/{filename}")
+        #img = cv2.imread(f"{self.image_dir}/{filename}")
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
         X = self.transform(img)
 
         if not self.Test:
