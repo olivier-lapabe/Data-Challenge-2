@@ -1,11 +1,11 @@
-import matplotlib.pyplot as plt
+import os
 import torch
 import torch.nn as nn
 import torchvision
 from src.DataLoader.DataLoader import create_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
-import os
+
 
 def main():
 
@@ -21,7 +21,7 @@ def main():
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    num_epochs = 40
+    num_epochs = 500
 
     # Create Training, Validation dataloaders
     trainval_generators = create_dataloaders(
@@ -42,7 +42,6 @@ def main():
         dataloaders=trainval_generators, 
         test_name=test_name)
     solver.train(num_epochs=num_epochs)
-    solver.save_model()
         
 if __name__ == "__main__":
     main()

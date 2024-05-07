@@ -1,12 +1,12 @@
-import torch
-import torch.nn as nn
-import pandas as pd
-from tqdm import tqdm
-import time
-import logging
-import os
 from datetime import datetime
+import logging
+import matplotlib.pyplot as plt
+import os
+import pandas as pd
+import time
+import torch
 from src.utils import metric_fn
+
 
 class Solver:
     # -----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ class Solver:
         self.optimizer = optimizer
         self.dataloaders = dataloaders
         self.test_name = test_name
-        self.history = {'train_loss': [], 'val_loss': []}
+        self.history = {'train_loss': [], 'val_loss': [], 'val_score': []}
         self.log_directory = None
         self.setup_logger()
         
@@ -47,7 +47,7 @@ class Solver:
         training_dataloader, validation_dataloader = self.dataloaders
         logging.info(f"Test name: {self.test_name}")
         logging.info("--- Dataloader parameters ---")
-        logging.info(f"# Validation samples: {len(validation_dataloader.dataset)}")
+        logging.info(f"# Training samples: {len(training_dataloader.dataset)} - # Validation samples: {len(validation_dataloader.dataset)}")
         logging.info(f"Batch size: {training_dataloader.batch_size}")
         logging.info("--- Training parameters ---")
         logging.info(f"Model: {self.model}")
@@ -57,16 +57,21 @@ class Solver:
         logging.info(f"Device used: {self.device}")
         logging.info("--- Results ---")
 
-        self.model.train()
-        torch.backends.mps.benchmark = True
-        torch.backends.cuda.benchmark = True
+        self.model.train()                      # Turn into "training mode"
+        torch.backends.mps.benchmark = True     # Allows PyTorch to automatically select the best algorithm for MPS
+        torch.backends.cuda.benchmark = True    # Allows PyTorch to automatically select the best algorithm for CUDA
 
+        best_val_score = float('inf')   # Keep track of best validation score
+        best_epoch = None               # Keep track of epoch with best validation score
+
+        # Start training over epochs
         start_time = time.time()
         for epoch in range(num_epochs):
-            epoch_loss = 0
             logging.info(f"Epoch {epoch+1} / {num_epochs}")
+            epoch_train_loss = 0  # Keep track of the cumulated training loss over every mini-batch of the epoch
 
-            for X, y, gender, filename in training_dataloader:
+            # Iterate training over mini-batches within epoch
+            for X, y, _, filename in training_dataloader:
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 
@@ -76,32 +81,48 @@ class Solver:
                 if torch.isnan(loss).any():
                     print(f'NaN detected in loss: filename {filename} - label {y} - y_pred {y_pred}')
                     break
-
+                
+                # Run gradient descent
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-                epoch_loss += loss.item()
+                epoch_train_loss += loss.item()
 
-            average_loss = epoch_loss / len(training_dataloader)
+            # Calculate average training loss per batch over the epoch
+            average_loss = epoch_train_loss / len(training_dataloader)
             self.history['train_loss'].append(average_loss)
             logging.info(f"Training - Average loss: {average_loss}")
 
-            self.evaluate(validation_dataloader)
+            # Evaluate model on Validation dataset
+            val_score = self.evaluate(validation_dataloader)
+            # Keep track of best (minimum) validation score and save corresponding model
+            if val_score < best_val_score:
+                best_val_score = val_score
+                best_epoch = epoch
+                torch.save(self.model.state_dict(), f"{self.log_directory}/best_model_epoch.pth")
+                logging.info(f"Model saved - Validation score: {best_val_score}")
 
         end_time = time.time()
+        logging.info("--- Recap training ---")
         logging.info(f"Average training + validation time per epoch: {(end_time - start_time) / num_epochs} seconds")
+        logging.info(f"Best score: Epoch {best_epoch+1} - {best_val_score}")
+
+        # Plot Training loss, Validation loss and Validation score over epochs
+        self.plot_history()
     
 
     # -----------------------------------------------------------------------------
     # evaluate
     # -----------------------------------------------------------------------------
-    def evaluate(self, dataloader):
-        self.model.eval()
+    def evaluate(self, validation_dataloader):
+        self.model.eval()   # Turn into "evaluation mode"
 
-        results_list = []
-        val_loss = 0
+        results_list = []   # Keep track of predictions for validation score
+        val_loss = 0        # Keep track of the cumulated training loss over every mini-batch
+
         with torch.no_grad():
-            for X, y, gender, filename in dataloader:
+            # Iterate inference over mini-batches
+            for X, y, gender, filename in validation_dataloader:
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 
@@ -112,45 +133,53 @@ class Solver:
                     print(f'NaN detected in loss: filename {filename} - label {y} - y_pred {y_pred}')
                     break
 
+                # Keep track of the cumulated training loss over every mini-batch
+                val_loss += loss.item()
+
+                # Keep track of predictions for validation score
                 for i in range(len(X)):
                     results_list.append({'pred': float(y_pred[i]),
                                         'target': float(y[i]),
-                                        'gender': float(gender[i])
-                                        })
+                                        'gender': float(gender[i])})
                 
-                val_loss += loss.item()
+        # Calculate average validation loss per batch
+        average_loss = val_loss / len(validation_dataloader)
+        self.history['val_loss'].append(average_loss)
 
+        # Calculate validation score
         results_df = pd.DataFrame(results_list)
         results_male = results_df.loc[results_df["gender"] > 0.5]
         results_female = results_df.loc[results_df["gender"] < 0.5]
-        score_val = metric_fn(results_male, results_female)
-
-        average_loss = val_loss / len(dataloader)
-        self.history['val_loss'].append(average_loss)
+        val_score = metric_fn(results_male, results_female)
+        self.history['val_score'].append(val_score)
         
-        end_time = time.time()
         logging.info(f"Validation - Average loss: {average_loss}")
-        logging.info(f"Validation - Score : {score_val}")
+        logging.info(f"Validation - Score : {val_score}")
+
+        return val_score
     
 
     # -----------------------------------------------------------------------------
-    # save_model
+    # plot_history
     # -----------------------------------------------------------------------------
-    def save_model(self):
-        #TODO: Save model only for epoch where Validation score is minimum
-        filename = f"{self.log_directory}/model.pth"
-        torch.save(self.model.state_dict(), filename)
-        print(f"Model saved to {filename}")
-    
-
-    # -----------------------------------------------------------------------------
-    # load_model
-    # -----------------------------------------------------------------------------
-    def load_model(self, path):
-        try:
-            self.model.load_state_dict(torch.load(path))
-        except Exception as e:
-            print(f"Failed to load model from {path}: {e}")
+    def plot_history(self):
+        epochs = range(1, len(self.history['train_loss']) + 1)
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(epochs, self.history['train_loss'], label='Training Loss')
+        plt.plot(epochs, self.history['val_loss'], label='Validation Loss')
+        plt.plot(epochs, self.history['val_score'], label='Validation Score', linestyle='--')
+        
+        plt.title('Train Loss, Val Loss and Val Score')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss/Score')
+        plt.legend()
+        
+        # Save the plot in the same directory as the logs and model
+        plot_filename = f"{self.log_directory}/training_validation_plot.png"
+        plt.savefig(plot_filename)
+        plt.close()
+        logging.info(f"Plot saved to {plot_filename}")
 
     
     # -----------------------------------------------------------------------------
@@ -161,3 +190,4 @@ class Solver:
         #TODO: Train on whole Train + Val
         #TODO: Predict on Test
         #TODO: Extract csv for upload
+        #TODO: What about shuffeling train and val between each epoch
