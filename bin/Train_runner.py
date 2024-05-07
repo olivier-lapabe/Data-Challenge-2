@@ -2,14 +2,20 @@ import os
 import torch
 import torch.nn as nn
 import torchvision
-from src.DataLoader.DataLoader import create_dataloaders
+from src.DataLoader.DataLoader import create_trainval_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
 
 
 def main():
+    """
+    Run Train_runner.py to:
+    - Train a model on the training dataset with chosen (hyper)-parameters.
+    - Validate it on the validation dataset to find optimal number of epochs (right between under- and overfitting).
+    (Then, run Test_runner.py to predict on the test dataset.)
+    """
 
-    # Folder name
+    # Test name (used for the name of the results folder)
     test_name = "Test"
 
     # Dataloader parameters
@@ -24,7 +30,7 @@ def main():
     num_epochs = 500
 
     # Create Training, Validation dataloaders
-    trainval_generators = create_dataloaders(
+    trainval_dataloaders = create_trainval_dataloaders(
         n_val = n_val, 
         batch_size=batch_size, 
         num_workers=num_workers)
@@ -39,7 +45,7 @@ def main():
         device=device, 
         loss_fn=loss_fn, 
         optimizer=optimizer, 
-        dataloaders=trainval_generators, 
+        dataloaders=trainval_dataloaders, 
         test_name=test_name)
     solver.train(num_epochs=num_epochs)
         

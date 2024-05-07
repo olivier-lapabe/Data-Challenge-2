@@ -180,14 +180,3 @@ class Solver:
         plt.savefig(plot_filename)
         plt.close()
         logging.info(f"Plot saved to {plot_filename}")
-
-    
-    # -----------------------------------------------------------------------------
-    # test_predict
-    # -----------------------------------------------------------------------------
-    #def test_predict(self, path):
-        #TODO: Load best model
-        #TODO: Train on whole Train + Val
-        #TODO: Predict on Test
-        #TODO: Extract csv for upload
-        #TODO: What about shuffeling train and val between each epoch
