@@ -1,9 +1,13 @@
-Ideas:
-- Have train and val split to have same gender representation
-- Remove genders that are unclear (e.g., between 0.3 and 0.7)
+Structural ideas:
+- Do algorithm that classifies gender to understand gender representation in test dataset. --> Guigui nouveau Runner (Gender_runner.py)
+- Calculate error on gender deciles on training dataset (e.g., between 0.3 and 0.7). 
+  If not similar, try to define first if a test picture is male or female. --> Olivier sur fichier EDA.ipynb
+- Have error as loss function for training. --> Guillaume - nouvelle fonction de loss à définir (par ex dans utils)
+
+Optimization ideas:
+- Train by Cross validation
 - Train with different batch size
 - Train with other models
 - Train with other loss function
 - Train with other Adam parameters (starting with learning rate)
 - Train with other optimizer than Adam
-- Occlusion is higher for women than men. Add first step top determine if picture is man or woman ?
