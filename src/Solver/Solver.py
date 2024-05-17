@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import time
 import torch
-from src.utils import metric_fn
+from src.utils import error_fn, metric_fn
 
 
 class Solver:
@@ -94,12 +94,12 @@ class Solver:
             logging.info(f"Training - Average loss: {average_loss}")
 
             # Evaluate model on Validation dataset
-            val_score = self.evaluate(validation_dataloader)
+            val_score, _ = self.evaluate(validation_dataloader)
             # Keep track of best (minimum) validation score and save corresponding model
             if val_score < best_val_score:
                 best_val_score = val_score
                 best_epoch = epoch
-                torch.save(self.model.state_dict(), f"{self.log_directory}/best_model_epoch.pth")
+                torch.save(self.model.state_dict(), f"{self.log_directory}/model_best_epoch_on_val.pth")
                 logging.info(f"Model saved - Validation score: {best_val_score}")
 
         end_time = time.time()
@@ -138,7 +138,8 @@ class Solver:
 
                 # Keep track of predictions for validation score
                 for i in range(len(X)):
-                    results_list.append({'pred': float(y_pred[i]),
+                    results_list.append({'filename': str(filename[i]),
+                                        'pred': float(y_pred[i]),
                                         'target': float(y[i]),
                                         'gender': float(gender[i])})
                 
@@ -156,7 +157,7 @@ class Solver:
         logging.info(f"Validation - Average loss: {average_loss}")
         logging.info(f"Validation - Score : {val_score}")
 
-        return val_score
+        return val_score, results_df
     
 
     # -----------------------------------------------------------------------------
