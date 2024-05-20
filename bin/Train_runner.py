@@ -2,7 +2,6 @@ import os
 import torch
 import torch.nn as nn
 import torchvision
-import timm
 from src.DataLoader.DataLoader import create_trainval_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
