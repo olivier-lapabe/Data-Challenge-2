@@ -16,4 +16,4 @@ class CustomLoss(nn.Module):
         weighted_squared_diff = weights * squared_diff
         
         # Compute the mean of the weighted squared differences
-        return weighted_squared_diff.mean()
+        return weighted_squared_diff.sum() / weights.sum()
