@@ -5,6 +5,7 @@ import torchvision
 from src.DataLoader.DataLoader import create_trainval_dataloaders, create_test_dataloader
 from src.Tester.Tester import Tester
 from src.utils import define_device
+from src.CustomLoss import CustomLoss
 
 
 def main():
