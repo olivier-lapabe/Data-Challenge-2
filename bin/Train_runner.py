@@ -2,9 +2,11 @@ import os
 import torch
 import torch.nn as nn
 import torchvision
+import timm
 from src.DataLoader.DataLoader import create_trainval_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
+from src.CustomLoss import CustomLoss
 
 
 def main():
@@ -25,7 +27,7 @@ def main():
 
     # Training parameters
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
-    loss_fn = nn.MSELoss()
+    loss_fn = CustomLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 500
 
