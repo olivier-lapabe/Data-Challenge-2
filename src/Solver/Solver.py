@@ -12,7 +12,7 @@ class Solver:
     # -----------------------------------------------------------------------------
     # __init__
     # -----------------------------------------------------------------------------
-    def __init__(self, model, device, loss_fn, optimizer, dataloaders, test_name):
+    def __init__(self, model, device, loss_fn, optimizer, dataloaders, test_name, gender = False):
         self.model = model
         self.device = device
         self.loss_fn = loss_fn
@@ -21,6 +21,7 @@ class Solver:
         self.test_name = test_name
         self.history = {'train_loss': [], 'val_loss': [], 'val_score': []}
         self.log_directory = None
+        self.gender = gender
         self.setup_logger()
         
 
@@ -71,7 +72,10 @@ class Solver:
             epoch_train_loss = 0  # Keep track of the cumulated training loss over every mini-batch of the epoch
 
             # Iterate training over mini-batches within epoch
-            for X, y, _, filename in training_dataloader:
+            for X, y, y_gen, filename in training_dataloader:
+                if self.gender:
+                    y = y_gen
+
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 
