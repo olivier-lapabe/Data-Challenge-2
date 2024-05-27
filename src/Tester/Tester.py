@@ -12,7 +12,7 @@ class Tester:
     # -----------------------------------------------------------------------------
     # __init__
     # -----------------------------------------------------------------------------
-    def __init__(self, model, device, loss_fn, optimizer, trainval_dataloaders, test_dataloader, log_directory):
+    def __init__(self, model, device, loss_fn, optimizer, trainval_dataloaders, test_dataloader, log_directory, gender = False):
         self.model = model
         self.device = device
         self.loss_fn = loss_fn
@@ -20,7 +20,7 @@ class Tester:
         self.trainval_dataloaders = trainval_dataloaders
         self.test_dataloader = test_dataloader
         self.log_directory = log_directory
-
+        self.gender_test = gender
 
     # -----------------------------------------------------------------------------
     # test
@@ -44,9 +44,14 @@ class Tester:
             print(f"Epoch {epoch+1} / {num_epochs}")
 
             # Iterate training over mini-batches within epoch
-            for X, y, _, filename in combined_dataloader:
-                X, y = X.to(self.device), y.to(self.device)
-                y = torch.reshape(y, (len(y), 1))
+            for X, y, y_gender, filename in combined_dataloader:
+                if self.gender_test:
+                    y = y_gender
+                    X, y = X.to(self.device), y.to(self.device).float()
+                    y = torch.reshape(y, (len(y), 1))
+                else:
+                    X, y = X.to(self.device), y.to(self.device)
+                    y = torch.reshape(y, (len(y), 1))
 
                 y_pred = self.model(X)
                 loss = self.loss_fn(y_pred, y)
@@ -58,6 +63,7 @@ class Tester:
                 # Run gradient descent
                 self.optimizer.zero_grad()
                 loss.backward()
+                print("ok")
                 self.optimizer.step()
         
         self.predict(self.test_dataloader)
