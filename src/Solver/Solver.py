@@ -127,6 +127,8 @@ class Solver:
         with torch.no_grad():
             # Iterate inference over mini-batches
             for X, y, gender, filename in validation_dataloader:
+                if self.gender:
+                    y=gender
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 

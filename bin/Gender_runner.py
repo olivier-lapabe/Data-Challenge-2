@@ -53,7 +53,5 @@ def main():
     solver.train(num_epochs=num_epochs)
 
 
-
-
 if __name__ == "__main__":
     main()
