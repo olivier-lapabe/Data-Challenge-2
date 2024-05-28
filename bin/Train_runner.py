@@ -17,7 +17,7 @@ def main():
     """
 
     # Test name (used for the name of the results folder)
-    test_name = "Test"
+    test_name = "Baseline"
 
     # Dataloader parameters
     n_val = 20000
@@ -26,7 +26,7 @@ def main():
 
     # Training parameters
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
-    loss_fn = CustomLoss()
+    loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 500
 

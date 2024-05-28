@@ -15,7 +15,7 @@ def main():
     """
 
     # Path to the saved model to analyze
-    model_path = "./results/2024-05-07_11-39-13_Test/best_model_epoch.pth"
+    model_path = "./results/2024-05-07_11-39-13_Baseline/best_model_epoch.pth"
 
     # Dataloader parameters
     n_val = 20000

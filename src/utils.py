@@ -3,6 +3,40 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import numpy as np
 from PIL import Image
 import torch
+import torchvision.transforms as transforms
+
+
+# -----------------------------------------------------------------------------
+# calculate_mean_std
+# -----------------------------------------------------------------------------
+def calculate_mean_std(df):
+    """
+    Calculate the mean and standard deviation of the dataset.
+
+    Args:
+        df (pd.DataFrame): Dataframe with the filenames.
+
+    Returns:
+        mean, std (tuple): Mean and standard deviation of the dataset.
+    """
+    transform = transforms.ToTensor()
+    sum_channels = torch.zeros(3)
+    sum_channels_squared = torch.zeros(3)
+    n_pixels = 0
+
+    for _, row in df.iterrows():
+        filename = row['filename']
+        img = Image.open(f"./data/crops_100K/{filename}")
+        img_tensor = transform(img)
+
+        sum_channels += img_tensor.sum(dim=(1, 2))
+        sum_channels_squared += (img_tensor ** 2).sum(dim=(1, 2))
+        n_pixels += img_tensor.numel() // 3  # Each image has 3 channels
+
+    mean = sum_channels / n_pixels
+    std = torch.sqrt(sum_channels_squared / n_pixels - mean ** 2)
+    
+    return mean, std
 
 
 # -----------------------------------------------------------------------------
