@@ -6,6 +6,8 @@ from src.DataLoader.DataLoader import create_trainval_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
 from src.CustomLoss import CustomLoss
+from src.DataLoader.DataLoader_tensor import create_tensor_dataloaders
+
 
 
 def main():
@@ -26,9 +28,10 @@ def main():
 
     # Training parameters
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
-    loss_fn = CustomLoss()
+    loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 500
+
 
     # Create Training, Validation dataloaders
     trainval_dataloaders = create_trainval_dataloaders(
@@ -36,6 +39,12 @@ def main():
         batch_size=batch_size, 
         num_workers=num_workers)
     
+    ### TEST
+    trainval_dataloaders = create_tensor_dataloaders(
+        batch_size=batch_size, 
+        num_workers=num_workers)
+    ### FIN DU TEST
+
     # Define device
     device = define_device()
     
