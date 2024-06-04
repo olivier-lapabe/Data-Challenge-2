@@ -1,10 +1,11 @@
 import os
 import torch
 import torch.nn as nn
-import torchvision
-from src.DataLoader.DataLoader import create_trainval_dataloaders
+import timm  # Import timm for model architecture
+from src.DataLoader.EfficientnetDataLoader import create_trainval_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
+# If you prefer to use your custom loss, replace nn.MSELoss with CustomLoss
 from src.CustomLoss import CustomLoss
 
 
@@ -17,29 +18,27 @@ def main():
     """
 
     # Test name (used for the name of the results folder)
-    test_name = "Baseline"
+    test_name = "Baseline_EfficientNetB3"
 
     # Dataloader parameters
     n_val = 20000
     batch_size = 64
-    num_workers = int(os.cpu_count()/2)
+    num_workers = int(os.cpu_count() / 2)
 
     # Training parameters
-    model = torchvision.models.mobilenet_v3_small(num_classes=1)
-    loss_fn = nn.MSELoss()
+    # Initialize EfficientNet-B3 for regression (num_classes=1 implies a single regression output)
+    model = timm.create_model(
+        'efficientnet_b3', pretrained=True, num_classes=1)
+    loss_fn = nn.MSELoss()  # Mean Squared Error Loss for regression tasks
+    # Consider experimenting with the learning rate
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 500
 
-    import time
-    start_time = time.time()
     # Create Training, Validation dataloaders
     trainval_dataloaders = create_trainval_dataloaders(
         n_val=n_val,
         batch_size=batch_size,
         num_workers=num_workers)
-
-    end_time = time.time()
-    print(f"Time to create dataloaders: {end_time - start_time} seconds")
 
     # Define device
     device = define_device()
