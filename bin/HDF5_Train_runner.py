@@ -19,11 +19,11 @@ def main():
     """
 
     # Test name (used for the name of the results folder)
-    test_name = "Test"
+    test_name = "mobilenet_v3_small"
 
     # Dataloader parameters
     n_val = 20000
-    batch_size = 64
+    batch_size = 32
     num_workers = int(os.cpu_count()/2)
 
     # Training parameters

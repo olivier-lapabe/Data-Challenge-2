@@ -2,6 +2,7 @@ import h5py
 import torch
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
+import numpy as np
 
 
 class HDF5Dataset(Dataset):
@@ -22,18 +23,19 @@ class HDF5Dataset(Dataset):
         return len(self.keys)
 
     def __getitem__(self, index):
-        'Generates one sample of data'
-        # Charger les données de l'image
-        image_data = self.hdf5_file[self.group][self.keys[index]][()]
-        image = torch.from_numpy(image_data).float()
-
-        # Charger les attributs
-        occlusion = float(
-            self.hdf5_file[self.group].attrs[f'FaceOcclusion_{self.keys[index]}'])
-        gender = self.hdf5_file[self.group].attrs[f'gender_{self.keys[index]}']
-        filename = self.keys[index]
-
-        return image, occlusion, gender, filename
+        try:
+            with h5py.File(self.file_path, 'r') as hdf5_file:
+                image_data = hdf5_file[self.group][self.keys[index]][()]
+                image = torch.from_numpy(image_data).float()
+                occlusion = np.float32(
+                    hdf5_file[self.group][self.keys[index]].attrs['FaceOcclusion'])
+                gender = hdf5_file[self.group][self.keys[index]
+                                               ].attrs['gender']
+        except KeyError as e:
+            print(f"Error accessing data: {e}")
+            # Handle the error e.g., by skipping this batch or using a default value
+            return None
+        return image, occlusion, gender, self.keys[index]
 
     def close(self):
         self.hdf5_file.close()
@@ -52,8 +54,8 @@ def create_tensor_dataloaders(batch_size=8, num_workers=0, shuffle_train=True, s
         training_generator, validation_generator (torch.utils.data.DataLoader)
     """
     # Initialisation des datasets HDF5
-    training_set = HDF5Dataset("./images_dataset.hdf5", 'train')
-    validation_set = HDF5Dataset("./images_dataset.hdf5", 'val')
+    training_set = HDF5Dataset("./images_dataset2.hdf5", 'train')
+    validation_set = HDF5Dataset("./images_dataset2.hdf5", 'val')
 
     # Création des DataLoaders
     training_generator = DataLoader(
