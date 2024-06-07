@@ -27,53 +27,18 @@ def get_image_tensor(image_path):
     return transform(img)
 
 
-def calculate_mean_std(df):
-    # Créer un DataLoader sans utiliser de batch size, c'est-à-dire charger toutes les données à la fois
-    # Cela peut être très gourmand en mémoire, donc assurez-vous que cela est faisable avec votre matériel
-    loader = torch.utils.data.DataLoader([get_image_tensor(
-        row['filename']) for index, row in df.iterrows()], batch_size=len(df), num_workers=0)
-
-    mean = 0.
-    sum_of_squared_error = 0.
-    total_samples = 0
-
-    for images in loader:
-        batch_samples = images.size(0)  # Nombre total d'images chargées
-        images = images.view(batch_samples, images.size(1), -1)
-
-        # Calculer la moyenne sur toutes les images
-        mean = images.mean([0, 2])
-
-        # Calculer la variance pour l'écart-type sur toutes les images
-        sum_of_squared_error = ((images - mean.unsqueeze(1))**2).sum([0, 2])
-        # Nombre total de pixels (H*W par image)
-        total_samples = images.size(2) * batch_samples
-
-    # Calcul de l'écart-type global
-    std = torch.sqrt(sum_of_squared_error / total_samples)
-
-    return mean, std
-
-
-mean, std = calculate_mean_std(df_train)
-
-
-def normalize(tensor):
-    return (tensor - mean[:, None, None]) / std[:, None, None]
-
-
 def batch_process_images(df, batch_size=2500):
     num_batches = (len(df) + batch_size - 1) // batch_size
     for i in range(num_batches):
         batch_df = df[i*batch_size:(i+1)*batch_size]
-        images = [normalize(get_image_tensor(row['filename']))
+        images = [get_image_tensor(row['filename'])
                   for _, row in batch_df.iterrows()]
         tensors = torch.stack(images)
         yield tensors, batch_df
 
 
 # Création du fichier HDF5 pour stocker les données
-with h5py.File('images_dataset_normalized.hdf5', 'w') as f:
+with h5py.File('images_dataset_non_normalized.hdf5', 'w') as f:
     train_grp = f.create_group('train')
     val_grp = f.create_group('val')
 

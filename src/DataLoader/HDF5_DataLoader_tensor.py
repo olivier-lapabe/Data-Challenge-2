@@ -41,7 +41,7 @@ class HDF5Dataset(Dataset):
         self.hdf5_file.close()
 
 
-def create_tensor_dataloaders(batch_size=8, num_workers=0, shuffle_train=True, shuffle_val=False):
+def create_tensor_dataloaders(batch_size=8, num_workers=0, shuffle_train=True, shuffle_val=False, path="./images_dataset2.hdf5"):
     """
     Create training and validation dataloaders from an HDF5 file.
     Args:
@@ -54,8 +54,8 @@ def create_tensor_dataloaders(batch_size=8, num_workers=0, shuffle_train=True, s
         training_generator, validation_generator (torch.utils.data.DataLoader)
     """
     # Initialisation des datasets HDF5
-    training_set = HDF5Dataset("./images_dataset2.hdf5", 'train')
-    validation_set = HDF5Dataset("./images_dataset2.hdf5", 'val')
+    training_set = HDF5Dataset(path, 'train')
+    validation_set = HDF5Dataset(path, 'val')
 
     # Création des DataLoaders
     training_generator = DataLoader(
