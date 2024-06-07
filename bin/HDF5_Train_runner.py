@@ -19,7 +19,7 @@ def main():
     """
 
     # Test name (used for the name of the results folder)
-    test_name = "mobilenet_v3_small_normalized"
+    test_name = "mobilenet_v3_small"
 
     # Dataloader parameters
     n_val = 20000
@@ -32,8 +32,6 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 500
 
-    import time
-    start_time = time.time()
     # Create Training, Validation dataloaders
     # trainval_dataloaders = create_trainval_dataloaders(
     #     n_val = n_val,
@@ -43,7 +41,7 @@ def main():
     # TEST
     trainval_dataloaders = create_tensor_dataloaders(
         batch_size=batch_size,
-        num_workers=num_workers, path="./images_dataset_normalized.hdf5")
+        num_workers=num_workers)
     # FIN DU TEST
 
     # Define device
