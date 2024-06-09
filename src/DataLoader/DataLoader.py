@@ -8,20 +8,14 @@ from src.utils import calculate_mean_std
 
 # Define data augmentation transformations
 train_transforms = transforms.Compose([
-    # transforms.RandomResizedCrop(224),       # Randomly crop and resize to 224x224
     transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
     transforms.RandomRotation(10),           # Randomly rotate the image by up to 10 degrees
-    # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),  # Randomly change the brightness, contrast, saturation, and hue
     transforms.ToTensor(),                   # Convert the image to a tensor
-    # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalize the image with mean and std
 ])
 
 # Define validation transformations (usually simpler)
 val_transforms = transforms.Compose([
-    # transforms.Resize(256),                  # Resize to 256x256
-    # transforms.CenterCrop(224),              # Center crop to 224x224
     transforms.ToTensor(),                   # Convert the image to a tensor
-    # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalize the image with mean and std
 ])
 
 # -----------------------------------------------------------------------------
@@ -84,9 +78,15 @@ def create_trainval_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuf
     """
     df_train = pd.read_csv("data/listes_training/data_100K/train_100K.csv", delimiter=' ')
     df_train = df_train.dropna()
+    val_transforms = transforms.Compose([transforms.ToTensor()])
     if not data_augmentation:
         train_transforms = val_transforms = transforms.Compose([transforms.ToTensor()])
-        val_transforms = transforms.Compose([transforms.ToTensor()])
+    else:
+        train_transforms = transforms.Compose([
+            transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
+            transforms.RandomRotation(10),           # Randomly rotate the image by up to 10 degrees
+            transforms.ToTensor(),                   # Convert the image to a tensor
+        ])
 
     df_val = df_train.loc[:n_val].reset_index(drop=True)
     df_train = df_train.loc[n_val:].reset_index(drop=True)
