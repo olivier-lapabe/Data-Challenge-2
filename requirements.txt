@@ -6,7 +6,6 @@ colorama==0.4.6
 comm==0.2.2
 contourpy==1.2.1
 cycler==0.12.1
--e git+https://github.com/olivier-lapabe/Data-Challenge-2.git@79c70a32d777a4d3eb7faf7fc1f679c286358648#egg=data_challenge_2
 debugpy==1.8.1
 decorator==5.1.1
 executing==2.0.1
