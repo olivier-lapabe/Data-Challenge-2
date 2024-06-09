@@ -17,14 +17,18 @@ df = df.dropna()
 df_train, df_val = train_test_split(df, test_size=0.2, random_state=42)
 
 transform = transforms.Compose([transforms.ToTensor()])
-
+transform_data_augmentation = transforms.Compose([
+    transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
+    transforms.RandomRotation(10),           # Randomly rotate the image by up to 10 degrees
+    transforms.ToTensor(),                   # Convert the image to a tensor
+])
 
 def get_image_tensor(image_path):
     full_path = os.path.join(image_dir, image_path)
     if not os.path.exists(full_path):
         raise FileNotFoundError(f"Image not found: {full_path}")
     img = Image.open(full_path).convert('RGB')
-    return transform(img)
+    return transform_data_augmentation(img)
 
 
 def batch_process_images(df, batch_size=2500):

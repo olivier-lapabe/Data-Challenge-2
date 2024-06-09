@@ -6,13 +6,30 @@ import torch
 import torchvision.transforms as transforms
 from src.utils import calculate_mean_std
 
+# Define data augmentation transformations
+train_transforms = transforms.Compose([
+    # transforms.RandomResizedCrop(224),       # Randomly crop and resize to 224x224
+    transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
+    transforms.RandomRotation(10),           # Randomly rotate the image by up to 10 degrees
+    # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),  # Randomly change the brightness, contrast, saturation, and hue
+    transforms.ToTensor(),                   # Convert the image to a tensor
+    # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalize the image with mean and std
+])
+
+# Define validation transformations (usually simpler)
+val_transforms = transforms.Compose([
+    # transforms.Resize(256),                  # Resize to 256x256
+    # transforms.CenterCrop(224),              # Center crop to 224x224
+    transforms.ToTensor(),                   # Convert the image to a tensor
+    # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalize the image with mean and std
+])
 
 # -----------------------------------------------------------------------------
 # Dataset
 # -----------------------------------------------------------------------------
 class Dataset(torch.utils.data.Dataset):
     'Characterizes a dataset for PyTorch'
-    def __init__(self, df, image_dir, Test=False):
+    def __init__(self, df, image_dir, tranform = None, Test=False):
         """
         Initialize the dataset.
         Args:
@@ -22,7 +39,7 @@ class Dataset(torch.utils.data.Dataset):
         """
         self.image_dir = image_dir
         self.df = df
-        self.transform = transforms.ToTensor()
+        self.transform = tranform
         self.Test = Test
         
     def __len__(self):
@@ -51,7 +68,7 @@ class Dataset(torch.utils.data.Dataset):
 # -----------------------------------------------------------------------------
 # create_trainval_dataloaders
 # -----------------------------------------------------------------------------
-def create_trainval_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuffle_train=True, shuffle_val=False):
+def create_trainval_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuffle_train=True, shuffle_val=False, data_augmentation = False):
     """
     Create training, validation and test dataloaders.
 
@@ -67,12 +84,15 @@ def create_trainval_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuf
     """
     df_train = pd.read_csv("data/listes_training/data_100K/train_100K.csv", delimiter=' ')
     df_train = df_train.dropna()
+    if not data_augmentation:
+        train_transforms = val_transforms = transforms.Compose([transforms.ToTensor()])
+        val_transforms = transforms.Compose([transforms.ToTensor()])
 
     df_val = df_train.loc[:n_val].reset_index(drop=True)
     df_train = df_train.loc[n_val:].reset_index(drop=True)
 
-    training_set = Dataset(df_train, "data/crops_100K")
-    validation_set = Dataset(df_val, "data/crops_100K")
+    training_set = Dataset(df_train, "data/crops_100K", train_transforms)
+    validation_set = Dataset(df_val, "data/crops_100K", val_transforms)
 
     training_generator = torch.utils.data.DataLoader(training_set, batch_size=batch_size, shuffle=shuffle_train, num_workers=num_workers)
     validation_generator = torch.utils.data.DataLoader(validation_set, batch_size=batch_size, shuffle=shuffle_val, num_workers=num_workers)

@@ -21,6 +21,7 @@ def main():
     n_val = 20000
     batch_size = 64
     num_workers = int(os.cpu_count()/2)
+    data_augmentation = True
 
     # Training parameters to be copied from the model to be retrained
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
@@ -32,7 +33,8 @@ def main():
     trainval_dataloaders = create_trainval_dataloaders(
         n_val = n_val, 
         batch_size=batch_size, 
-        num_workers=num_workers)
+        num_workers=num_workers,
+        data_augmentation=data_augmentation)
     test_dataloader = create_test_dataloader(
         batch_size=batch_size, 
         num_workers=num_workers)
