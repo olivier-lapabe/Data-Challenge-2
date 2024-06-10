@@ -1,18 +1,27 @@
 Structural ideas:
+- Try data augmentation (rotation, flipping, optional: colorizing, cropping, etc.) --> Guigui
+- Remove pictures with worst predicitions in train and val --> Guigui
+- Pre-processing (normalization, etc.) --> Lucas
+- Test with less pictures in training dataset (to check if data augmentation is relevant) --> Paul
+
+Model ideas:
+- Train with other models in torchvision (Done: mobilenetv3large, DenseNet, YOLO - others to be checked...)
+- For each model to test:
+  - Train by Cross validation
+  - Pre-trained or not-pretrained
+  - Train with different batch size
+  - Train with other loss function
+  - Train with other Adam parameters (starting with learning rate)
+  - Train with other optimizer than Adam
+
+Tested - not interesting:
 - Do algorithm that classifies gender to understand gender representation in test dataset. --> Guigui nouveau Runner (Gender_runner.py)
 - Calculate error on gender deciles on training dataset (e.g., between 0.3 and 0.7). 
   If not similar, try to define first if a test picture is male or female. --> Olivier sur fichier EDA.ipynb
 - Have error as loss function for training. --> Guillaume - nouvelle fonction de loss à définir (par ex dans utils)
-- Test with less pictures in training dataset (to check if data augmentation is relevant) --> Paul
 - Save images all at once on GPU at the start. Or avoid opening them (extract the tensor once for all)
 - Try pin_memory=True and non_blocking=True
 
-Optimization ideas:
-- Pre-processing (normalization, etc.)
-- Train by Cross validation
-- Train with different batch size
-- Train with other models in torchvision (Done: mobilenetv3large, DenseNet - others to be checked...)
-- Train YOLO, Mask R-CNN, RetinaNet, HRNet, Deformable CNs
-- Train with other loss function
-- Train with other Adam parameters (starting with learning rate)
-- Train with other optimizer than Adam
+Tested - works
+- Create HDF5 files
+
