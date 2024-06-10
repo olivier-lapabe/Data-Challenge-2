@@ -37,10 +37,11 @@ def main():
     start_time = time.time()
     # Create Training, Validation dataloaders
     trainval_dataloaders = create_trainval_dataloaders(
-        n_val = n_val,
+        n_val=n_val,
         batch_size=batch_size,
         num_workers=num_workers,
-        data_augmentation=data_augmentation)
+        data_augmentation=data_augmentation,
+        normalize=True)
 
     # TEST
     # trainval_dataloaders = create_tensor_dataloaders(
