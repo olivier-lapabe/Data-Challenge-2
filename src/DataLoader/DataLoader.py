@@ -6,17 +6,6 @@ import torch
 import torchvision.transforms as transforms
 from src.utils import calculate_mean_std
 
-# Define data augmentation transformations
-train_transforms = transforms.Compose([
-    transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
-    transforms.RandomRotation(10),           # Randomly rotate the image by up to 10 degrees
-    transforms.ToTensor(),                   # Convert the image to a tensor
-])
-
-# Define validation transformations (usually simpler)
-val_transforms = transforms.Compose([
-    transforms.ToTensor(),                   # Convert the image to a tensor
-])
 
 # -----------------------------------------------------------------------------
 # Dataset
