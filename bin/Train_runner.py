@@ -26,6 +26,7 @@ def main():
     batch_size = 32
     num_workers = int(os.cpu_count()/2)
     data_augmentation = True
+    normalize = True
 
     # Training parameters
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
@@ -41,7 +42,7 @@ def main():
         batch_size=batch_size,
         num_workers=num_workers,
         data_augmentation=data_augmentation,
-        normalize=True)
+        normalize=normalize)
 
     # TEST
     # trainval_dataloaders = create_tensor_dataloaders(
