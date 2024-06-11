@@ -20,7 +20,8 @@ model = torch.load(path)
 
 test_dataloader = create_test_dataloader(
     batch_size=batch_size,
-    num_workers=num_workers)
+    num_workers=num_workers,
+    normalize=normalize)
 
 with torch.no_grad():
     results_list = []  # Keep track of predictions

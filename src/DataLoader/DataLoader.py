@@ -71,10 +71,21 @@ def create_trainval_dataloaders(n_val=20000, batch_size=8, num_workers=0, shuffl
     df_train = df_train.dropna()
 
     val_transforms = transforms.Compose([transforms.ToTensor()])
-    if not data_augmentation:
+    if not data_augmentation & (not normalize):
         train_transforms = val_transforms = transforms.Compose(
             [transforms.ToTensor()])
-    elif normalize:
+    elif (not data_augmentation) & normalize:
+        train_transforms = transforms.Compose([
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225]),
+            transforms.ToTensor()
+        ])
+        val_transforms = transforms.Compose([
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225]),
+            transforms.ToTensor()
+        ])
+    elif data_augmentation & normalize:
         train_transforms = transforms.Compose([
             transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
             # Randomly rotate the image by up to 10 degrees

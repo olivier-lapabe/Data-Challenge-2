@@ -2,12 +2,14 @@ import os
 import torch
 import torch.nn as nn
 import torchvision
+import time
 from src.DataLoader.DataLoader import create_trainval_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
 from src.CustomLoss import CustomLoss
 # from src.DataLoader.DataLoader_tensor import create_tensor_dataloaders
 from src.DataLoader.HDF5_DataLoader_tensor import create_tensor_dataloaders
+from torch.optim.lr_scheduler import StepLR
 
 
 def main():
@@ -34,7 +36,10 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 200
 
-    import time
+    # Learning rate scheduler
+    # Decays the learning rate by a factor of 0.1 every 50 epochs
+    scheduler = StepLR(optimizer, step_size=50, gamma=0.1)
+
     start_time = time.time()
     # Create Training, Validation dataloaders
     trainval_dataloaders = create_trainval_dataloaders(
@@ -61,6 +66,7 @@ def main():
         device=device,
         loss_fn=loss_fn,
         optimizer=optimizer,
+        scheduler=scheduler,
         dataloaders=trainval_dataloaders,
         test_name=test_name)
     solver.train(num_epochs=num_epochs)
