@@ -6,24 +6,14 @@ import torch
 import torchvision.transforms as transforms
 from src.utils import calculate_mean_std
 
-# Define data augmentation transformations
-train_transforms = transforms.Compose([
-    transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
-    transforms.RandomRotation(10),           # Randomly rotate the image by up to 10 degrees
-    transforms.ToTensor(),                   # Convert the image to a tensor
-])
-
-# Define validation transformations (usually simpler)
-val_transforms = transforms.Compose([
-    transforms.ToTensor(),                   # Convert the image to a tensor
-])
 
 # -----------------------------------------------------------------------------
 # Dataset
 # -----------------------------------------------------------------------------
 class Dataset(torch.utils.data.Dataset):
     'Characterizes a dataset for PyTorch'
-    def __init__(self, df, image_dir, tranform = None, Test=False):
+
+    def __init__(self, df, image_dir, tranform=transforms.Compose([transforms.ToTensor()]), Test=False):
         """
         Initialize the dataset.
         Args:
@@ -35,7 +25,7 @@ class Dataset(torch.utils.data.Dataset):
         self.df = df
         self.transform = tranform
         self.Test = Test
-        
+
     def __len__(self):
         'Denotes the total number of samples'
         return len(self.df)
@@ -46,15 +36,15 @@ class Dataset(torch.utils.data.Dataset):
         row = self.df.loc[index]
         filename = row['filename']
         img = Image.open(f"{self.image_dir}/{filename}")
-        #img = cv2.imread(f"{self.image_dir}/{filename}")
-        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
+        # img = cv2.imread(f"{self.image_dir}/{filename}")
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         X = self.transform(img)
 
         if not self.Test:
             y = np.float32(row['FaceOcclusion'])
             gender = row['gender']
             return X, y, gender, filename
-        
+
         else:
             return X, filename
 
@@ -62,7 +52,7 @@ class Dataset(torch.utils.data.Dataset):
 # -----------------------------------------------------------------------------
 # create_trainval_dataloaders
 # -----------------------------------------------------------------------------
-def create_trainval_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuffle_train=True, shuffle_val=False, data_augmentation = False):
+def create_trainval_dataloaders(n_val=20000, batch_size=8, num_workers=0, shuffle_train=True, shuffle_val=False, data_augmentation=False, normalize=False):
     """
     Create training, validation and test dataloaders.
 
@@ -76,16 +66,34 @@ def create_trainval_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuf
     Returns:
         training_generator, validation_generator (torch.utils.data.DataLoader): Training and validation dataloaders.
     """
-    df_train = pd.read_csv("data/listes_training/data_100K/train_100K.csv", delimiter=' ')
+    df_train = pd.read_csv(
+        "data/listes_training/data_100K/train_100K.csv", delimiter=' ')
     df_train = df_train.dropna()
+
     val_transforms = transforms.Compose([transforms.ToTensor()])
     if not data_augmentation:
-        train_transforms = val_transforms = transforms.Compose([transforms.ToTensor()])
+        train_transforms = val_transforms = transforms.Compose(
+            [transforms.ToTensor()])
+    elif normalize:
+        train_transforms = transforms.Compose([
+            transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
+            # Randomly rotate the image by up to 10 degrees
+            transforms.RandomRotation(10),
+            transforms.ToTensor(),  # Convert the image to a tensor
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225])  # Normalize the image
+        ])
+        val_transforms = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225])
+        ])
     else:
         train_transforms = transforms.Compose([
             transforms.RandomHorizontalFlip(),       # Randomly flip the image horizontally
-            transforms.RandomRotation(10),           # Randomly rotate the image by up to 10 degrees
-            transforms.ToTensor(),                   # Convert the image to a tensor
+            # Randomly rotate the image by up to 10 degrees
+            transforms.RandomRotation(10),
+            transforms.ToTensor(),  # Convert the image to a tensor
         ])
 
     df_val = df_train.loc[:n_val].reset_index(drop=True)
@@ -94,8 +102,10 @@ def create_trainval_dataloaders(n_val = 20000, batch_size=8, num_workers=0, shuf
     training_set = Dataset(df_train, "data/crops_100K", train_transforms)
     validation_set = Dataset(df_val, "data/crops_100K", val_transforms)
 
-    training_generator = torch.utils.data.DataLoader(training_set, batch_size=batch_size, shuffle=shuffle_train, num_workers=num_workers)
-    validation_generator = torch.utils.data.DataLoader(validation_set, batch_size=batch_size, shuffle=shuffle_val, num_workers=num_workers)
+    training_generator = torch.utils.data.DataLoader(
+        training_set, batch_size=batch_size, shuffle=shuffle_train, num_workers=num_workers)
+    validation_generator = torch.utils.data.DataLoader(
+        validation_set, batch_size=batch_size, shuffle=shuffle_val, num_workers=num_workers)
 
     return training_generator, validation_generator
 
@@ -115,9 +125,11 @@ def create_test_dataloader(batch_size=8, num_workers=0, shuffle_test=False):
     Returns:
         test_generator (torch.utils.data.DataLoader): Test dataloader.
     """
-    df_test = pd.read_csv("data/listes_training/data_100K/test_students.csv", delimiter=' ')
+    df_test = pd.read_csv(
+        "data/listes_training/data_100K/test_students.csv", delimiter=' ')
     df_test = df_test.dropna()
     test_set = Dataset(df_test, "data/crops_100K", Test=True)
-    test_generator = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=shuffle_test, num_workers=num_workers)
+    test_generator = torch.utils.data.DataLoader(
+        test_set, batch_size=batch_size, shuffle=shuffle_test, num_workers=num_workers)
 
     return test_generator
