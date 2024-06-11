@@ -69,6 +69,7 @@ def create_trainval_dataloaders(n_val=20000, batch_size=8, num_workers=0, shuffl
     df_train = pd.read_csv(
         "data/listes_training/data_100K/train_100K.csv", delimiter=' ')
     df_train = df_train.dropna()
+
     val_transforms = transforms.Compose([transforms.ToTensor()])
     if not data_augmentation:
         train_transforms = val_transforms = transforms.Compose(
@@ -81,6 +82,11 @@ def create_trainval_dataloaders(n_val=20000, batch_size=8, num_workers=0, shuffl
             transforms.ToTensor(),  # Convert the image to a tensor
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
                                  0.229, 0.224, 0.225])  # Normalize the image
+        ])
+        val_transforms = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225])
         ])
     else:
         train_transforms = transforms.Compose([
