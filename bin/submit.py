@@ -11,6 +11,9 @@ result_directory = 'results'
 batch_size = 64
 num_workers = int(os.cpu_count()/2)
 device = define_device()
+normalize = False  # Set to True if the model was trained with normalization
+# if the normalize is not the standar one : mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+# change the values in the create_test_dataloader function
 
 # load the model
 model = torch.load(path)

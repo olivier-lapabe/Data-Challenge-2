@@ -113,7 +113,7 @@ def create_trainval_dataloaders(n_val=20000, batch_size=8, num_workers=0, shuffl
 # -----------------------------------------------------------------------------
 # create_test_dataloader
 # -----------------------------------------------------------------------------
-def create_test_dataloader(batch_size=8, num_workers=0, shuffle_test=False):
+def create_test_dataloader(batch_size=8, num_workers=0, shuffle_test=False, normalize=False):
     """
     Create test dataloaders.
 
@@ -128,7 +128,15 @@ def create_test_dataloader(batch_size=8, num_workers=0, shuffle_test=False):
     df_test = pd.read_csv(
         "data/listes_training/data_100K/test_students.csv", delimiter=' ')
     df_test = df_test.dropna()
-    test_set = Dataset(df_test, "data/crops_100K", Test=True)
+    if normalize:
+        test_transforms = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225])
+        ])
+
+    test_set = Dataset(df_test, "data/crops_100K",
+                       Test=True, tranform=test_transforms)
     test_generator = torch.utils.data.DataLoader(
         test_set, batch_size=batch_size, shuffle=shuffle_test, num_workers=num_workers)
 
