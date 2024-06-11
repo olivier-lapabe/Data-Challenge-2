@@ -16,7 +16,11 @@ def main():
     - Predict on test set and create csv output.
     """
     # Folder name where to find the model to be retrained
-    log_directory = "./results/2024-05-07_11-39-13_Test"
+    log_directory = "./results/test1"
+
+    # if the folder does not exist, create it
+    if not os.path.exists(log_directory):
+        os.makedirs(log_directory)
 
     # Dataloader parameters
     n_val = 20000
