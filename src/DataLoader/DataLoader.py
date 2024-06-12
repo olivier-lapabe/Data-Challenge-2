@@ -145,6 +145,8 @@ def create_test_dataloader(batch_size=8, num_workers=0, shuffle_test=False, norm
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
                                  0.229, 0.224, 0.225])
         ])
+    else:
+        test_transforms = transforms.Compose([transforms.ToTensor()])
 
     test_set = Dataset(df_test, "data/crops_100K",
                        Test=True, tranform=test_transforms)
