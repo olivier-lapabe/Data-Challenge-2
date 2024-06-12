@@ -2,13 +2,14 @@ import os
 import torch
 import torch.nn as nn
 import torchvision
+from transformers import DeiTForImageClassification
 import time
 from src.DataLoader.DataLoader import create_trainval_dataloaders
 from src.Solver.Solver import Solver
 from src.utils import define_device
 from src.CustomLoss import CustomLoss
-# from src.DataLoader.DataLoader_tensor import create_tensor_dataloaders
-from src.DataLoader.HDF5_DataLoader_tensor import create_tensor_dataloaders
+from src.DataLoader.DataLoader_tensor import create_tensor_dataloaders
+# from src.DataLoader.HDF5_DataLoader_tensor import create_tensor_dataloaders
 from torch.optim.lr_scheduler import StepLR
 
 
@@ -21,7 +22,7 @@ def main():
     """
 
     # Test name (used for the name of the results folder)
-    test_name = "data_augmentation"
+    test_name = "DeiTransformer"
 
     # Dataloader parameters
     n_val = 20000
@@ -31,7 +32,8 @@ def main():
     normalize = True
 
     # Training parameters
-    model = torchvision.models.mobilenet_v3_small(num_classes=1)
+    model = DeiTForImageClassification.from_pretrained("facebook/deit-base-distilled-patch16-224", num_labels=1)
+
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 200
