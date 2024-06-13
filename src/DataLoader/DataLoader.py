@@ -71,7 +71,7 @@ def create_trainval_dataloaders(n_val=20000, batch_size=8, num_workers=0, shuffl
     df_train = df_train.dropna()
 
     val_transforms = transforms.Compose([transforms.ToTensor()])
-    if not data_augmentation & (not normalize):
+    if (not data_augmentation) & (not normalize):
         train_transforms = val_transforms = transforms.Compose(
             [transforms.ToTensor()])
     elif (not data_augmentation) & normalize:
