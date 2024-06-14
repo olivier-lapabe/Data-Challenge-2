@@ -140,7 +140,7 @@ class Solver:
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 
-                y_pred = self.model(X)
+                y_pred = self.model(X).logits
                 loss = self.loss_fn(y_pred, y)
 
                 if torch.isnan(loss).any():

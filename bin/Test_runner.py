@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision
 from src.DataLoader.DataLoader import create_trainval_dataloaders, create_test_dataloader
+from transformers import DeiTForImageClassification
 from src.Tester.Tester import Tester
 from src.utils import define_device
 from src.CustomLoss import CustomLoss
@@ -16,7 +17,7 @@ def main():
     - Predict on test set and create csv output.
     """
     # Folder name where to find the model to be retrained
-    log_directory = "./results/test1"
+    log_directory = "./results/2024-06-13_07-25-03_DeiTransformer"
 
     # if the folder does not exist, create it
     if not os.path.exists(log_directory):
@@ -24,16 +25,16 @@ def main():
 
     # Dataloader parameters
     n_val = 20000
-    batch_size = 64
+    batch_size = 32
     num_workers = int(os.cpu_count()/2)
     data_augmentation = True
     normalize = True
 
     # Training parameters to be copied from the model to be retrained
-    model = torchvision.models.mobilenet_v3_small(num_classes=1)
+    model = DeiTForImageClassification.from_pretrained("facebook/deit-base-distilled-patch16-224", num_labels=1)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    num_epochs = 250
+    num_epochs = 2
 
     # Learning rate scheduler
     # Decays the learning rate by a factor of 0.1 every 50 epochs

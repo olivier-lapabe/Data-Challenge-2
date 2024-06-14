@@ -55,7 +55,7 @@ class Tester:
                 X, y = X.to(self.device), y.to(self.device)
                 y = torch.reshape(y, (len(y), 1))
 
-                y_pred = self.model(X)
+                y_pred = self.model(X).logits
                 loss = self.loss_fn(y_pred, y)
 
                 if torch.isnan(loss).any():
@@ -85,7 +85,7 @@ class Tester:
             # Iterate inference over mini-batches
             for X, _ in test_dataloader:
                 X = X.to(self.device)
-                y_pred = self.model(X)
+                y_pred = self.model(X).logits
 
                 # Keep track of predictions
                 for i in range(len(X)):
