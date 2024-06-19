@@ -161,6 +161,5 @@ cython_debug/
 
 data
 .DS_Store
-results
 nohup.out
 *.pth
