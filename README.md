@@ -9,7 +9,7 @@ Nous avons réalisé une analyse exploratoire des données dont les résultats s
 Dans cette analyse, nous constatons notamment :  
 •⁠  ⁠Nombre d'images important : 101 345 images.  
 •⁠  ⁠La variable "gender" est continue : elle varie entre 0 (femme) et 1 (homme).  
-•⁠  ⁠Répartition H/F plutôt équilibrée : 40% de femmes et 60% d'hommes.  
+•⁠  ⁠Répartition H/F plutôt équilibrée : 40% de femmes (<0.5) et 60% d'hommes (>0.5).  
 •⁠  ⁠Analyse de la distribution des occlusions : La distribution semble suivre une exponentielle décroissante.  
 
 
