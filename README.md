@@ -49,7 +49,7 @@ $$
 ### Train - Train_runner.py
 1. Create training and validation dataloaders, including loading and preprocessing (using src/DataLoader/Dataloader.py).  
 2. Instanciate solver, train model, plot and log loss data for train and val (using src/Solver/Solver.py).  
-3. Save best epoch according to lowest validation loss.  
+3. Save best epoch according to lowest validation loss (results/).
 
 ### Test - Test_runner.py
 1. Create training dataloader (composed of training and validation dataset), including loading and preprocessing.  
