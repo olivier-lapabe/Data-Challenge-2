@@ -1,5 +1,5 @@
 # Data Challenge 2
-## Team : Paul Aristidou, Guillaume Bocquillion, Guillaume Cazottes, Lucas Guerrot, Olivier Lapabe-Goastat, 
+## Team : Paul Aristidou, Guillaume Bocquillion, Guillaume Cazottes, Lucas Guerrot, Olivier Lapabe-Goastat 
 
 Nous avons fait ce projet à l'aide de fichiers .py et d'un dépôt git. Cela nous a permis d'avoir un code modulaire, facilitant le travail de groupe et pratique à lancer sur des machines distantes.
 
