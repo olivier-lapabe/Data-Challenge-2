@@ -65,7 +65,7 @@ $$
 * To install our project: 
 
 ```
-git clone https://github.com/olivier-lapabe/Data-Challenge-2/tree/main
+git clone https://github.com/olivier-lapabe/Data-Challenge-2
 cd Data-Challenge-2
 pip install .
 ```
@@ -77,7 +77,7 @@ test
 * Clone the repository:
 
 ```
-git clone https://github.com/olivier-lapabe/Data-Challenge-2/tree/main
+git clone https://github.com/olivier-lapabe/Data-Challenge-2
 cd Data-Challenge-2
 ```
 
