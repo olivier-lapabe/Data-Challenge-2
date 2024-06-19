@@ -29,11 +29,6 @@ class Tester:
     # -----------------------------------------------------------------------------
 
     def test(self, num_epochs):
-        # TODO: Retrieve best model (hyper-)parameters (incl. num_epochs)
-        # TODO: Train on whole Train + Val
-        # TODO: Predict on Test
-        # TODO: Extract csv for upload
-        # TODO: What about shuffling train and val between each epoch
         training_dataloader, validation_dataloader = self.trainval_dataloaders
         combined_dataset = torch.utils.data.ConcatDataset(
             [training_dataloader.dataset, validation_dataloader.dataset])

@@ -21,26 +21,28 @@ def main():
     """
 
     # Test name (used for the name of the results folder)
-    test_name = "data_augmentation"
+    test_name = "resnet101"
 
     # Dataloader parameters
     n_val = 20000
-    batch_size = 32
+    batch_size = 256
     num_workers = int(os.cpu_count()/2)
     data_augmentation = True
     normalize = True
+    scheduler = None
 
     # Training parameters
-    model = torchvision.models.mobilenet_v3_small(num_classes=1)
+    model = torchvision.models.resnet101(num_classes=1)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     num_epochs = 200
 
     # Learning rate scheduler
-    # Decays the learning rate by a factor of 0.1 every 50 epochs
-    scheduler = StepLR(optimizer, step_size=50, gamma=0.1)
+    # Uncomment if you want to use a personalised lr scheduler
+    # scheduler = StepLR(optimizer, step_size=50, gamma=0.1)
 
     start_time = time.time()
+
     # Create Training, Validation dataloaders
     trainval_dataloaders = create_trainval_dataloaders(
         n_val=n_val,
@@ -48,13 +50,6 @@ def main():
         num_workers=num_workers,
         data_augmentation=data_augmentation,
         normalize=normalize)
-
-    # TEST
-    # trainval_dataloaders = create_tensor_dataloaders(
-    #     batch_size=batch_size,
-    #     num_workers=num_workers, path="./images_dataset_normalized.hdf5",
-    #     data_augmentation=data_augmentation)
-    # # FIN DU TEST
 
     # Define device
     device = define_device()
@@ -70,9 +65,6 @@ def main():
         dataloaders=trainval_dataloaders,
         test_name=test_name)
     solver.train(num_epochs=num_epochs)
-
-    # save the model
-    torch.save(model.state_dict(), f"results/{test_name}/model.pth")
 
 
 if __name__ == "__main__":

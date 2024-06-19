@@ -5,7 +5,6 @@ import torchvision
 from src.DataLoader.DataLoader import create_trainval_dataloaders, create_test_dataloader
 from src.Tester.Tester import Tester
 from src.utils import define_device
-from src.CustomLoss import CustomLoss
 from torch.optim.lr_scheduler import StepLR
 
 
@@ -28,6 +27,7 @@ def main():
     num_workers = int(os.cpu_count()/2)
     data_augmentation = True
     normalize = True
+    scheduler = None
 
     # Training parameters to be copied from the model to be retrained
     model = torchvision.models.mobilenet_v3_small(num_classes=1)
@@ -36,8 +36,8 @@ def main():
     num_epochs = 250
 
     # Learning rate scheduler
-    # Decays the learning rate by a factor of 0.1 every 50 epochs
-    scheduler = StepLR(optimizer, step_size=50, gamma=0.1)
+    # Uncomment if you want to use a personalised lr scheduler
+    # scheduler = StepLR(optimizer, step_size=50, gamma=0.1)
 
     # Create Training, Validation dataloaders
     trainval_dataloaders = create_trainval_dataloaders(
