@@ -57,3 +57,45 @@ $$
 3. Tester.py:  
 3.1. Instanciate tester and train model on training dataloader (using src/Tester/Tester.py) until the best epoch.    
 3.2. Test on testing dataloader in order to create the .csv to submit (using src/Tester/Tester.py).   
+
+## Installing
+
+#### For Users:
+
+* To install our project: 
+
+```
+git clone https://github.com/olivier-lapabe/Data-Challenge-2/tree/main
+cd Data-Challenge-2
+pip install .
+```
+
+#### For Developers/Contributors:
+
+If you're planning to contribute or test the latest changes, you should first set up a virtual environment and then install the package in "editable" mode. This allows any changes you make to the source files to immediately affect the installed package without requiring a reinstall.
+test
+* Clone the repository:
+
+```
+git clone https://github.com/olivier-lapabe/Data-Challenge-2/tree/main
+cd Data-Challenge-2
+```
+
+* Set up a virtual environment:
+
+```
+python3 -m venv datachal_env
+source datachal_env/bin/activate  # On Windows, use: datachal_env\Scripts\activate
+```
+
+* Install the required dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+* Install the project in editable mode:
+
+```
+pip install -e . 
+```
